@@ -273,11 +273,11 @@ def main(path):
                 print('Validation -- loss: {} accuracy: {}\n'.format(loss, acc))
 
         if i % save_iter == 0:
-            # model.save(model_path) # Usual way to save model but throwing an error when reading for some reason
-            utils.save_model(model, model_path)
+            model.save(model_path) # Usual way to save model but throwing an error when reading for some reason
+            # utils.save_model(model, model_path)
 
-    # model.save(model_path)
-    utils.save_model(model, model_path)
+    model.save(model_path)
+    # utils.save_model(model, model_path)
     print('\nSaved trained model at %s ' % model_path)
 
 
