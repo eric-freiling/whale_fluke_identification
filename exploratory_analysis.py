@@ -27,9 +27,9 @@ def get_im_size_array():
     return im_size_array
 
 
-file_name = df.values[0, 0]
-file_id = df.values[0, 1]
-im = cv2.imread(join(train_path, file_name))
+# file_name = df.values[0, 0]
+# file_id = df.values[0, 1]
+# im = cv2.imread(join(train_path, file_name))
 
 # loc = np.where(file_ids == file_id)[0]
 # ims = []
