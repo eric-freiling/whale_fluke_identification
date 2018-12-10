@@ -75,7 +75,7 @@ def get_batch(folder, hist, counts, batch_size, input_shape):
     right_batch = np.zeros([batch_size, input_shape[0], input_shape[1], input_shape[2]])
     for i in range(batch_size):
         left_batch[i, :, :, :] = cv2.imread(join(folder, left_names[i]))[:, :, [0]]
-        right_batch[i, :, :, :] = cv2.imread(join(folder, left_names[i]))[:, :, [0]]
+        right_batch[i, :, :, :] = cv2.imread(join(folder, right_names[i]))[:, :, [0]]
 
     return left_batch, right_batch, answers
 
@@ -99,7 +99,7 @@ def main(path):
     validation_flag = True
     validation_percent = 0.20
     batch_size = 100
-    epochs = 2
+    epochs = 200
     learning_rate = 0.0001
     print_iter = 10
     save_iter = 10
