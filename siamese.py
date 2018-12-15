@@ -50,14 +50,18 @@ def get_batch_names(hist, counts, batch_size):
     return left[random_indices], right[random_indices], answers[random_indices]
 
 
-def get_batch(folder, hist, counts, batch_size, input_shape):
+def get_batch(folder, hist, counts, batch_size, input_shape, bw):
     left_names, right_names, answers = get_batch_names(hist, counts, batch_size)
     left_batch = np.zeros([batch_size, input_shape[0], input_shape[1], input_shape[2]])
     right_batch = np.zeros([batch_size, input_shape[0], input_shape[1], input_shape[2]])
-    for i in range(batch_size):
-        left_batch[i, :, :, :] = cv2.imread(join(folder, left_names[i]))[:, :, [0]]
-        right_batch[i, :, :, :] = cv2.imread(join(folder, right_names[i]))[:, :, [0]]
-
+    if bw:
+        for i in range(batch_size):
+            left_batch[i, :, :, :] = cv2.imread(join(folder, left_names[i]))[:, :, [0]]
+            right_batch[i, :, :, :] = cv2.imread(join(folder, right_names[i]))[:, :, [0]]
+    else:
+        for i in range(batch_size):
+            left_batch[i, :, :, :] = cv2.imread(join(folder, left_names[i]))[:, :, :]
+            right_batch[i, :, :, :] = cv2.imread(join(folder, right_names[i]))[:, :, :]
     return left_batch, right_batch, answers
 
 
@@ -67,7 +71,8 @@ def main(data_path):
     # ### Set network architecture
 
     # Set Siamese "leg" architecture
-    input_shape = (50, 100, 1)
+    input_shape = (100, 200, 1)
+    bw = True
     filter_sizes = [64, 128, 128, 256]
     conv_shapes = [(2, 2), (2, 2), (2, 2), (2, 2)]
     conv_acts = ["relu", "relu", "relu", "relu"]
@@ -89,7 +94,7 @@ def main(data_path):
 
     # define paths
     save_dir = 'saved_models'
-    model_name = 'first_model'
+    model_name = '100_200_bw'
     model_path = join(save_dir, model_name)
 
     # Create folder to save models
@@ -132,7 +137,7 @@ def main(data_path):
     train_hist, train_counts = utils.answers_to_hist(train_answers_path, return_counts=True)
 
     # Check if data is already transformed, if not transform it
-    train_data_dir = join(data_path, "transformed_train")
+    train_data_dir = join(data_path, "transformed_train_100_200")
     if not exists(train_data_dir):
         makedirs(train_data_dir)
         print("Transforming Train Directory... \n")
@@ -177,7 +182,8 @@ def main(data_path):
             train_hist,
             train_counts,
             batch_size,
-            input_shape
+            input_shape,
+            bw
         )
 
         # Train on batch
@@ -197,7 +203,8 @@ def main(data_path):
                     val_hist,
                     val_counts,
                     batch_size,
-                    input_shape
+                    input_shape,
+                    bw
                 )
                 score = model.evaluate([x_left_val, x_right_val], y_val, verbose=0)
                 loss = round(score[0], 2)
@@ -215,5 +222,5 @@ def main(data_path):
 
 if __name__ == "__main__":
     # Data path will need to be set according to your own folder structure
-    path = "../data/whale_fluke_data"
-    main(path)
+    data_path = "../data/whale_fluke_data"
+    main(data_path)
