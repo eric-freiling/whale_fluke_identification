@@ -1,7 +1,7 @@
 import utils
 import sys
 import numpy as np
-from keras.models import load_model
+# from keras.models import load_model
 import pandas as pd
 import random
 import cv2
@@ -16,25 +16,6 @@ import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
 
 environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
-
-def answers_to_hist(answers_path, return_counts=False):
-    df = pd.read_csv(answers_path)
-    ids = df.Id.values
-    im_names = df.Image.values
-
-    unique_ids = np.unique(ids)
-    hist = []
-    hist_counts = []
-    for u_id in unique_ids:
-        loc = np.where(ids == u_id)[0]
-        hist_counts.append(len(loc))
-        hist.append(im_names[loc])
-
-    if return_counts:
-        return np.array(hist), np.array(hist_counts)
-    else:
-        return np.array(hist)
 
 
 def get_batch_names(hist, counts, batch_size):
@@ -80,7 +61,7 @@ def get_batch(folder, hist, counts, batch_size, input_shape):
     return left_batch, right_batch, answers
 
 
-def main(path):
+def main(data_path):
 
     print("Begin Siamese Training ... \n")
     # ### Set network architecture
@@ -144,11 +125,11 @@ def main(path):
                         content[random_indices[val_index::]]
                     ])
                 )
-        val_hist, val_counts = answers_to_hist(val_answers_path, return_counts=True)
+        val_hist, val_counts = utils.answers_to_hist(val_answers_path, return_counts=True)
     else:
         train_answers_path = join(data_path, "train.csv")
 
-    train_hist, train_counts = answers_to_hist(train_answers_path, return_counts=True)
+    train_hist, train_counts = utils.answers_to_hist(train_answers_path, return_counts=True)
 
     # Check if data is already transformed, if not transform it
     train_data_dir = join(data_path, "transformed_train")
@@ -156,8 +137,6 @@ def main(path):
         makedirs(train_data_dir)
         print("Transforming Train Directory... \n")
         utils.transform_dir(join(data_path, "train"), train_data_dir)
-
-
 
     # Check to see if model already exists
     # If exists load the model and pick up training where we left off
@@ -236,5 +215,5 @@ def main(path):
 
 if __name__ == "__main__":
     # Data path will need to be set according to your own folder structure
-    data_path = "../data/whale_fluke_data"
-    main(data_path)
+    path = "../data/whale_fluke_data"
+    main(path)
