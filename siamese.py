@@ -14,6 +14,7 @@ import matplotlib.image as img
 from scipy import signal
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
+from parameters import *
 
 environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -68,34 +69,6 @@ def get_batch(folder, hist, counts, batch_size, input_shape, bw):
 def main(data_path):
 
     print("Begin Siamese Training ... \n")
-    # ### Set network architecture
-
-    # Set Siamese "leg" architecture
-    input_shape = (100, 200, 1)
-    bw = True
-    filter_sizes = [64, 128, 128, 256]
-    conv_shapes = [(2, 2), (2, 2), (2, 2), (2, 2)]
-    conv_acts = ["relu", "relu", "relu", "relu"]
-
-    # Set final connected layers
-    dense_shapes = [4096, 4096]
-    dense_acts = ["sigmoid", "relu"]
-
-    # Set parameters
-    validation_flag = True
-    validation_percent = 0.20
-    batch_size = 100
-    epochs = 200
-    learning_rate = 0.0001
-    print_iter = 10
-    save_iter = 10
-
-    # ### Set up directory structure
-
-    # define paths
-    save_dir = 'saved_models'
-    model_name = '100_200_bw'
-    model_path = join(save_dir, model_name)
 
     # Create folder to save models
     if not exists(save_dir):
@@ -137,11 +110,16 @@ def main(data_path):
     train_hist, train_counts = utils.answers_to_hist(train_answers_path, return_counts=True)
 
     # Check if data is already transformed, if not transform it
-    train_data_dir = join(data_path, "transformed_train_100_200")
+    if bw_flag:
+        train_data_dir = join(data_path, "transformed_train_" + str(input_shape[0])
+                              + "_" + str(input_shape[1]) + "_" + "bw" )
+    else:
+        train_data_dir = join(data_path, "transformed_train_" + str(input_shape[0])
+                              + "_" + str(input_shape[1]) + "_" + "color")
     if not exists(train_data_dir):
         makedirs(train_data_dir)
         print("Transforming Train Directory... \n")
-        utils.transform_dir(join(data_path, "train"), train_data_dir)
+        utils.transform_dir(join(data_path, "train"), train_data_dir, input_shape, bw_flag)
 
     # Check to see if model already exists
     # If exists load the model and pick up training where we left off
@@ -183,7 +161,7 @@ def main(data_path):
             train_counts,
             batch_size,
             input_shape,
-            bw
+            bw_flag
         )
 
         # Train on batch
@@ -204,7 +182,7 @@ def main(data_path):
                     val_counts,
                     batch_size,
                     input_shape,
-                    bw
+                    bw_flag
                 )
                 score = model.evaluate([x_left_val, x_right_val], y_val, verbose=0)
                 loss = round(score[0], 2)
@@ -222,5 +200,5 @@ def main(data_path):
 
 if __name__ == "__main__":
     # Data path will need to be set according to your own folder structure
-    data_path = "../data/whale_fluke_data"
-    main(data_path)
+    path = "../data/whale_fluke_data"
+    main(path)

@@ -68,15 +68,16 @@ def rgb2gray(im):
     return gray
 
 
-def transform_image(im):
+def transform_image(im, input_shape, bw_flag):
     # convert to gray scale
-    gray_im = rgb2gray(im)
-    resized_im = cv2.resize(gray_im, (100, 50))
+    if bw_flag:
+        im = rgb2gray(im)
+    resized_im = cv2.resize(im, (input_shape[1], input_shape[0]))
 
     return resized_im
 
 
-def transform_dir(input_dir, output_dir):
+def transform_dir(input_dir, output_dir, input_shape, bw_flag):
     if not exists(output_dir):
         makedirs(output_dir)
     files = listdir(input_dir)
@@ -86,7 +87,7 @@ def transform_dir(input_dir, output_dir):
         if counter % 1000 == 0:
             print("Transformed {}/{} images".format(counter, num_files))
         image = cv2.imread(join(input_dir, f))
-        trans_image = transform_image(image)
+        trans_image = transform_image(image, input_shape, bw_flag)
         cv2.imwrite(join(output_dir, f), trans_image)
         counter += 1
 
