@@ -1,10 +1,10 @@
 from os.path import join, exists
 from os import listdir, makedirs
-import matplotlib.image as img
+import pandas as pd
 import numpy as np
 from random import *
 import cv2
-from keras.models import model_from_json
+# from keras.models import model_from_json
 from keras.optimizers import rmsprop
 from keras.layers import Input, Conv2D, MaxPooling2D, Dropout, Flatten, Dense, merge, Lambda
 
@@ -110,3 +110,24 @@ def load_model_npy(model_name, input_shape, filters, conv_shapes, conv_acts, den
     model.set_weights(weights)
 
     return model
+
+
+def answers_to_hist(answers_path, return_counts=False, return_labels=False):
+    df = pd.read_csv(answers_path)
+    ids = df.Id.values
+    im_names = df.Image.values
+
+    unique_ids = np.unique(ids)
+    hist = []
+    hist_counts = []
+    for u_id in unique_ids:
+        loc = np.where(ids == u_id)[0]
+        hist_counts.append(len(loc))
+        hist.append(im_names[loc])
+
+    if return_counts:
+        return np.array(hist), np.array(hist_counts)
+    elif return_labels:
+        return np.array(hist), unique_ids
+    else:
+        return np.array(hist)

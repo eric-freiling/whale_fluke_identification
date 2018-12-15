@@ -1,7 +1,7 @@
 import utils
 import sys
 import numpy as np
-from keras.models import load_model
+# from keras.models import load_model
 import pandas as pd
 import random
 import cv2
@@ -16,25 +16,6 @@ import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
 
 environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
-
-def answers_to_hist(answers_path, return_counts=False):
-    df = pd.read_csv(answers_path)
-    ids = df.Id.values
-    im_names = df.Image.values
-
-    unique_ids = np.unique(ids)
-    hist = []
-    hist_counts = []
-    for u_id in unique_ids:
-        loc = np.where(ids == u_id)[0]
-        hist_counts.append(len(loc))
-        hist.append(im_names[loc])
-
-    if return_counts:
-        return np.array(hist), np.array(hist_counts)
-    else:
-        return np.array(hist)
 
 
 def get_batch_names(hist, counts, batch_size):
@@ -69,24 +50,29 @@ def get_batch_names(hist, counts, batch_size):
     return left[random_indices], right[random_indices], answers[random_indices]
 
 
-def get_batch(folder, hist, counts, batch_size, input_shape):
+def get_batch(folder, hist, counts, batch_size, input_shape, bw):
     left_names, right_names, answers = get_batch_names(hist, counts, batch_size)
     left_batch = np.zeros([batch_size, input_shape[0], input_shape[1], input_shape[2]])
     right_batch = np.zeros([batch_size, input_shape[0], input_shape[1], input_shape[2]])
-    for i in range(batch_size):
-        left_batch[i, :, :, :] = cv2.imread(join(folder, left_names[i]))[:, :, [0]]
-        right_batch[i, :, :, :] = cv2.imread(join(folder, right_names[i]))[:, :, [0]]
-
+    if bw:
+        for i in range(batch_size):
+            left_batch[i, :, :, :] = cv2.imread(join(folder, left_names[i]))[:, :, [0]]
+            right_batch[i, :, :, :] = cv2.imread(join(folder, right_names[i]))[:, :, [0]]
+    else:
+        for i in range(batch_size):
+            left_batch[i, :, :, :] = cv2.imread(join(folder, left_names[i]))[:, :, :]
+            right_batch[i, :, :, :] = cv2.imread(join(folder, right_names[i]))[:, :, :]
     return left_batch, right_batch, answers
 
 
-def main(path):
+def main(data_path):
 
     print("Begin Siamese Training ... \n")
     # ### Set network architecture
 
     # Set Siamese "leg" architecture
-    input_shape = (50, 100, 1)
+    input_shape = (100, 200, 1)
+    bw = True
     filter_sizes = [64, 128, 128, 256]
     conv_shapes = [(2, 2), (2, 2), (2, 2), (2, 2)]
     conv_acts = ["relu", "relu", "relu", "relu"]
@@ -108,7 +94,7 @@ def main(path):
 
     # define paths
     save_dir = 'saved_models'
-    model_name = 'first_model'
+    model_name = '100_200_bw'
     model_path = join(save_dir, model_name)
 
     # Create folder to save models
@@ -144,20 +130,18 @@ def main(path):
                         content[random_indices[val_index::]]
                     ])
                 )
-        val_hist, val_counts = answers_to_hist(val_answers_path, return_counts=True)
+        val_hist, val_counts = utils.answers_to_hist(val_answers_path, return_counts=True)
     else:
         train_answers_path = join(data_path, "train.csv")
 
-    train_hist, train_counts = answers_to_hist(train_answers_path, return_counts=True)
+    train_hist, train_counts = utils.answers_to_hist(train_answers_path, return_counts=True)
 
     # Check if data is already transformed, if not transform it
-    train_data_dir = join(data_path, "transformed_train")
+    train_data_dir = join(data_path, "transformed_train_100_200")
     if not exists(train_data_dir):
         makedirs(train_data_dir)
         print("Transforming Train Directory... \n")
         utils.transform_dir(join(data_path, "train"), train_data_dir)
-
-
 
     # Check to see if model already exists
     # If exists load the model and pick up training where we left off
@@ -198,7 +182,8 @@ def main(path):
             train_hist,
             train_counts,
             batch_size,
-            input_shape
+            input_shape,
+            bw
         )
 
         # Train on batch
@@ -218,7 +203,8 @@ def main(path):
                     val_hist,
                     val_counts,
                     batch_size,
-                    input_shape
+                    input_shape,
+                    bw
                 )
                 score = model.evaluate([x_left_val, x_right_val], y_val, verbose=0)
                 loss = round(score[0], 2)
