@@ -73,7 +73,7 @@ def define_siamese_vgg16(input_shape, dense_shapes, dense_acts, lr):
     right_input = Input(input_shape)
 
     convnet = Sequential()
-    convnet.add(VGG16(weights='imagenet', include_top=False))
+    convnet.add(VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3)))
     convnet.add(Flatten())
     convnet.add(Dense(dense_shapes[0], activation=dense_acts[0]))
 
