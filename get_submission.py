@@ -47,8 +47,7 @@ def main(data_path):
     test_batch_size = 1000
     num_blocks = int(len(labels)/test_batch_size)
     remainder = len(labels) - num_blocks * test_batch_size
-    left_batch = np.zeros([test_batch_size, *input_shape])
-    right_batch = np.zeros([test_batch_size, *input_shape])
+
     answers = []
     test_counter = 0
     for test_file in test_file_names:
@@ -56,7 +55,8 @@ def main(data_path):
             print("Test Image: {}/{}".format(test_counter, len(test_file_names)))
         test_counter += 1
         test_im = cv2.imread(join(test_data_dir, test_file))
-
+        left_batch = np.zeros([test_batch_size, *input_shape])
+        right_batch = np.zeros([test_batch_size, *input_shape])
         # For each test image test against
         counter = 0
         probs = np.zeros(len(labels))
@@ -70,6 +70,8 @@ def main(data_path):
                 counter += 1
             y_hat = model.predict([left_batch, right_batch])
             probs[block_num * test_batch_size:(block_num + 1) * test_batch_size] = y_hat.flatten()
+        left_batch = np.zeros([remainder, *input_shape])
+        right_batch = np.zeros([remainder, *input_shape])
         for i in range(remainder):
             left_batch[i, :, :, :] = test_im[:, :, [0]]
             if bw_flag:

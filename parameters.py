@@ -1,7 +1,7 @@
 from os.path import join
 
 
-input_shape = (50, 100, 1)
+input_shape = (224, 224, 3)
 bw_flag = True
 filter_sizes = [64, 128, 128, 256]
 conv_shapes = [(2, 2), (2, 2), (2, 2), (2, 2)]

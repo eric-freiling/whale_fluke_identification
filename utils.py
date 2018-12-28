@@ -13,6 +13,9 @@ from keras.regularizers import l2
 from keras import backend as K
 from keras.optimizers import SGD, Adam
 from keras.losses import binary_crossentropy
+from keras.applications.vgg16 import VGG16
+from keras.preprocessing import image
+from keras.applications.vgg16 import preprocess_input
 
 
 def define_siamese_model(input_shape, filters, conv_shapes, conv_acts, dense_shapes, dense_acts, lr):
@@ -35,6 +38,42 @@ def define_siamese_model(input_shape, filters, conv_shapes, conv_acts, dense_sha
             convnet.add(MaxPooling2D())
     # Conv pipeline to use in each siamese 'leg'
 
+    convnet.add(Dense(dense_shapes[0], activation=dense_acts[0]))
+
+    # encode each of the two inputs into a vector with the convnet
+    encoded_l = convnet(left_input)
+    encoded_r = convnet(right_input)
+
+    # merge two encoded inputs with the l1 distance between them
+    # Getting the L1 Distance between the 2 encodings
+    dist_func = Lambda(lambda tensor: K.abs(tensor[0] - tensor[1]))
+
+    # Add the distance function to the network
+    distance_layer = dist_func([encoded_l, encoded_r])
+    dense_input = distance_layer
+    for i in range(1, len(dense_shapes)):
+        layer = Dense(dense_shapes[i], activation=dense_acts[i])(dense_input)
+        drop_out = Dropout(0.5)(layer)
+        dense_input = drop_out
+
+    prediction = Dense(1, activation='sigmoid')(dense_input)
+    siamese_net = Model(inputs=[left_input, right_input], outputs=prediction)
+
+    optimizer = Adam(lr, decay=2.5e-4)
+    siamese_net.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=['accuracy'])
+
+    return siamese_net
+
+
+def define_siamese_vgg16(input_shape, dense_shapes, dense_acts, lr):
+    # input shape (w, h, d)
+
+    # Define Inputs for two images
+    left_input = Input(input_shape)
+    right_input = Input(input_shape)
+
+    convnet = Sequential()
+    convnet.add(VGG16(weights='imagenet', include_top=False))
     convnet.add(Dense(dense_shapes[0], activation=dense_acts[0]))
 
     # encode each of the two inputs into a vector with the convnet
