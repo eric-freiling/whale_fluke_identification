@@ -1,6 +1,6 @@
 from os.path import join
 
-
+freeze_flag = True
 input_shape = (224, 224, 3)
 bw_flag = False
 filter_sizes = [64, 128, 128, 256]

@@ -131,27 +131,23 @@ def main(data_path):
     # If doesn't exist, then create it
     if exists(model_path + ".npy"):
         print("Loading Saved Model...\n")
-        model = utils.load_model_npy(
+        model = utils.load_model_vgg16(
             model_path,
             input_shape,
-            filter_sizes,
-            conv_shapes,
-            conv_acts,
             dense_shapes,
             dense_acts,
             learning_rate
         )
     else:
         print("Creating New Model...\n")
-        model = utils.define_siamese_model(
+        model = utils.define_siamese_vgg16(
             input_shape,
-            filter_sizes,
-            conv_shapes,
-            conv_acts,
             dense_shapes,
             dense_acts,
             learning_rate
         )
+    if freeze_flag:
+        model.layers[2].trainable = False
 
     # Run Epochs
     if validation_flag:
