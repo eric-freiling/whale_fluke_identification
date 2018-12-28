@@ -74,6 +74,7 @@ def define_siamese_vgg16(input_shape, dense_shapes, dense_acts, lr):
 
     convnet = Sequential()
     convnet.add(VGG16(weights='imagenet', include_top=False))
+    convnet.add(Flatten())
     convnet.add(Dense(dense_shapes[0], activation=dense_acts[0]))
 
     # encode each of the two inputs into a vector with the convnet
@@ -142,6 +143,19 @@ def load_model_npy(model_name, input_shape, filters, conv_shapes, conv_acts, den
         filters,
         conv_shapes,
         conv_acts,
+        dense_shapes,
+        dense_acts,
+        lr
+    )
+    weights = np.load(model_name + ".npy")
+    model.set_weights(weights)
+
+    return model
+
+
+def load_model_vgg16(model_name, input_shape, dense_shapes, dense_acts, lr):
+    model = define_siamese_vgg16(
+        input_shape,
         dense_shapes,
         dense_acts,
         lr

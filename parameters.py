@@ -2,7 +2,7 @@ from os.path import join
 
 
 input_shape = (224, 224, 3)
-bw_flag = True
+bw_flag = False
 filter_sizes = [64, 128, 128, 256]
 conv_shapes = [(2, 2), (2, 2), (2, 2), (2, 2)]
 conv_acts = ["relu", "relu", "relu", "relu"]
