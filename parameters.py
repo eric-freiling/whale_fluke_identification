@@ -14,7 +14,7 @@ dense_acts = ["sigmoid", "relu"]
 # Set parameters
 validation_flag = True
 validation_percent = 0.20
-batch_size = 100
+batch_size = 50
 epochs = 200
 learning_rate = 0.0001
 print_iter = 10
