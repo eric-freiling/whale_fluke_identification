@@ -105,7 +105,7 @@ def define_siamese_vgg16(input_shape, dense_shapes, dense_acts, lr):
 def load_embedding_net(model_path, input_shape, dense_shapes, dense_acts, lr):
     # input shape (w, h, d)
 
-    orig_weights = np.load(model_path)
+    orig_weights = np.load(model_path + ".npy")
     input_layer = Input(input_shape)
 
     convnet = Sequential()
