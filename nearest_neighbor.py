@@ -59,13 +59,14 @@ def main():
                 batch[counter, :, :, :] = cv2.imread(str(train_data_dir / im_name))
                 counter += 1
             train_embeddings[start:stop, :] = model.predict(batch)
-        batch_names = image_names[stop::]
-        batch = np.zeros([remainder, input_shape[0], input_shape[1], input_shape[2]])
-        counter = 0
-        for im_name in batch_names:
-            batch[counter, :, :, :] = cv2.imread(str(train_data_dir / im_name))
-            counter += 1
-        train_embeddings[stop::, :] = model.predict(batch)
+        if remainder > 0:
+            batch_names = image_names[stop::]
+            batch = np.zeros([remainder, input_shape[0], input_shape[1], input_shape[2]])
+            counter = 0
+            for im_name in batch_names:
+                batch[counter, :, :, :] = cv2.imread(str(train_data_dir / im_name))
+                counter += 1
+            train_embeddings[stop::, :] = model.predict(batch)
         np.save(data_path / "train_embeddings", train_embeddings)
 
     test_file_names = listdir(test_path)
@@ -86,13 +87,14 @@ def main():
                 batch[counter, :, :, :] = cv2.imread(str(test_data_dir / im_name))
                 counter += 1
             test_embeddings[start:stop, :] = model.predict(batch)
-        batch_names = test_file_names[stop::]
-        batch = np.zeros([remainder, input_shape[0], input_shape[1], input_shape[2]])
-        counter = 0
-        for im_name in batch_names:
-            batch[counter, :, :, :] = cv2.imread(str(test_data_dir / im_name))
-            counter += 1
-        test_embeddings[stop::, :] = model.predict(batch)
+        if remainder > 0:
+            batch_names = test_file_names[stop::]
+            batch = np.zeros([remainder, input_shape[0], input_shape[1], input_shape[2]])
+            counter = 0
+            for im_name in batch_names:
+                batch[counter, :, :, :] = cv2.imread(str(test_data_dir / im_name))
+                counter += 1
+            test_embeddings[stop::, :] = model.predict(batch)
         np.save(data_path / "test_embeddings", test_embeddings)
 
 
