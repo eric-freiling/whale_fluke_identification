@@ -71,7 +71,7 @@ def get_batch(folder, hist, counts, batch_size, input_shape, bw):
     return left_batch, right_batch, answers
 
 
-def main(data_path):
+def main():
 
     print("Begin Siamese Training ... \n")
 
@@ -201,5 +201,5 @@ def main(data_path):
 
 if __name__ == "__main__":
     # Data path will need to be set according to your own folder structure
-    path = "../data/whale_fluke_data"
-    main(path)
+    # path = "../data/whale_fluke_data"
+    main()

@@ -17,9 +17,9 @@ validation_flag = True
 validation_percent = 0.20
 batch_size = 20
 epochs = 10000
-learning_rate = 0.0001
-print_iter = 10
-save_iter = 10
+learning_rate = 0.00001
+print_iter = 100
+save_iter = 100
 
 save_dir = 'saved_models'
 if bw_flag:
@@ -29,5 +29,5 @@ else:
 model_path = join(save_dir, model_name)
 
 data_path = Path("../data/whale_fluke_data")
-train_path = Path(data_path / "train")
-test_path = Path(data_path / "test")
+train_path = data_path / "train"
+test_path = data_path / "test"

@@ -33,6 +33,7 @@ def main():
     labels = labels[loc]
     image_names = image_names[loc]
 
+    print("Loading Embedded Model...\n")
     model = utils.load_embedding_net(
         model_path,
         input_shape,
@@ -45,8 +46,11 @@ def main():
     remainder = len(labels) - num_blocks * batch_size
     batch = np.zeros([batch_size, input_shape[0], input_shape[1], input_shape[2]])
     if not exists(data_path / "train_embeddings.npy"):
+        print("Calculating Train Embeddings...\n")
         train_embeddings = np.zeros([len(image_names), 4096])
         for block_num in range(num_blocks):
+            if block_num % 100 == 0:
+                print("Processing Block {}/{}".format(block_num, num_blocks))
             start = block_num * batch_size
             stop = (block_num + 1) * batch_size
             batch_names = image_names[start:stop]
@@ -62,15 +66,18 @@ def main():
             batch[counter, :, :, :] = cv2.imread(str(train_data_dir / im_name))
             counter += 1
         train_embeddings[stop::, :] = model.predict(batch)
-        np.save("train_embeddings", train_embeddings)
+        np.save(data_path / "train_embeddings", train_embeddings)
 
     test_file_names = listdir(test_path)
     if not exists(data_path / "test_embeddings.npy"):
+        print("Calculating Test Embeddings...\n")
         test_embeddings = np.zeros([len(test_file_names), 4096])
         num_blocks = int(len(test_file_names) / batch_size)
         remainder = len(test_file_names) - num_blocks * batch_size
         batch = np.zeros([batch_size, input_shape[0], input_shape[1], input_shape[2]])
         for block_num in range(num_blocks):
+            if block_num % 100 == 0:
+                print("Processing Block {}/{}".format(block_num, num_blocks))
             start = block_num * batch_size
             stop = (block_num + 1) * batch_size
             batch_names = test_file_names[start:stop]
@@ -86,7 +93,7 @@ def main():
             batch[counter, :, :, :] = cv2.imread(str(test_data_dir / im_name))
             counter += 1
         test_embeddings[stop::, :] = model.predict(batch)
-        np.save("test_embeddings", test_embeddings)
+        np.save(data_path / "test_embeddings", test_embeddings)
 
 
     # if not exists("submissions"):
