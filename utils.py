@@ -102,6 +102,29 @@ def define_siamese_vgg16(input_shape, dense_shapes, dense_acts, lr):
     return siamese_net
 
 
+def load_embedding_net(model_path, input_shape, dense_shapes, dense_acts, lr):
+    # input shape (w, h, d)
+
+    orig_weights = np.load(model_path)
+    input_layer = Input(input_shape)
+
+    convnet = Sequential()
+    convnet.add(VGG16(weights=None, include_top=False, input_shape=(224, 224, 3)))
+    convnet.add(Flatten())
+    convnet.add(Dense(dense_shapes[0], activation=dense_acts[0]))
+
+    # encode each of the two inputs into a vector with the convnet
+    embedded_layer = convnet(input_layer)
+
+    embedded_net = Model(inputs=input_layer, outputs=embedded_layer)
+
+    # optimizer = Adam(lr, decay=2.5e-4)
+    # embedded_net.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=['accuracy'])
+    embedded_net.set_weights(orig_weights[0:len(embedded_net.weights)])
+
+    return embedded_net
+
+
 def rgb2gray(im):
     gray = 0.2989 * im[:, :, 0] + 0.5870 * im[:, :, 1] + 0.1140 * im[:, :, 2]
 
