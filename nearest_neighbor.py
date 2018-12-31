@@ -96,7 +96,29 @@ def main():
                 counter += 1
             test_embeddings[stop::, :] = model.predict(batch)
         np.save(data_path / "test_embeddings", test_embeddings)
+    name_matrix = []
+    dist_matrix = np.zeros([len(test_file_names), 5])
+    for i in range(len(test_file_names)):
+        dist = np.linalg.norm(train_embeddings - test_embeddings[i, :], axis=1)
+        sort_loc = np.argsort(dist)
+        counter = 0
+        whale_names = []
+        whale_set = set([])
+        index = 0
+        while counter < 5:
+            whale_set.add(labels[sort_loc[index]])
+            if len(whale_set) > counter:
+                whale_names.append(labels[sort_loc[index]])
+                dist_matrix[i, counter] = dist[sort_loc[index]]
+                counter += 1
+            index += 1
+        name_matrix.append(whale_names)
 
+    name_matrix = np.array(name_matrix)
+    np.save("name_matrix", name_matrix)
+    np.save("dist_matrix", dist_matrix)
+
+    # lines = ["Image,Id\n"]
 
     # if not exists("submissions"):
     #     makedirs("submissions")
