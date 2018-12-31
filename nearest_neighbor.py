@@ -68,6 +68,8 @@ def main():
                 counter += 1
             train_embeddings[stop::, :] = model.predict(batch)
         np.save(data_path / "train_embeddings", train_embeddings)
+    else:
+        train_embeddings = np.load(data_path / "train_embeddings.npy")
 
     test_file_names = listdir(test_path)
     if not exists(data_path / "test_embeddings.npy"):
@@ -96,6 +98,9 @@ def main():
                 counter += 1
             test_embeddings[stop::, :] = model.predict(batch)
         np.save(data_path / "test_embeddings", test_embeddings)
+    else:
+        test_embeddings = np.load(data_path / "test_embeddings.npy")
+
     name_matrix = []
     dist_matrix = np.zeros([len(test_file_names), 5])
     for i in range(len(test_file_names)):
@@ -117,8 +122,8 @@ def main():
         name_matrix.append(whale_names)
 
     name_matrix = np.array(name_matrix)
-    np.save("name_matrix", name_matrix)
-    np.save("dist_matrix", dist_matrix)
+    np.save(data_path / "name_matrix", name_matrix)
+    np.save(data_path / "dist_matrix", dist_matrix)
 
     # lines = ["Image,Id\n"]
 
