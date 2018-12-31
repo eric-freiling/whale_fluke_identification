@@ -99,6 +99,8 @@ def main():
     name_matrix = []
     dist_matrix = np.zeros([len(test_file_names), 5])
     for i in range(len(test_file_names)):
+        if i % 100 == 0:
+            print("Processing Test File {}/{}".format(i, len(test_file_names)))
         dist = np.linalg.norm(train_embeddings - test_embeddings[i, :], axis=1)
         sort_loc = np.argsort(dist)
         counter = 0
