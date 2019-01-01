@@ -106,7 +106,7 @@ def main():
     num_train = train_embeddings.shape[0]
     num_test = len(test_file_names)
     # Apply top net
-    if not exists(data_path / "name_matrix.npy"):
+    if not exists(data_path / "siamese_name_matrix.npy"):
         name_matrix = []
         dist_matrix = np.zeros([num_test, 5])
         top_model = utils.load_top_net(
@@ -137,11 +137,11 @@ def main():
             name_matrix.append(whale_names)
 
         name_matrix = np.array(name_matrix)
-        np.save(data_path / "name_matrix", name_matrix)
-        np.save(data_path / "dist_matrix", dist_matrix)
+        np.save(data_path / "siamese_name_matrix", name_matrix)
+        np.save(data_path / "siamese_dist_matrix", dist_matrix)
     else:
-        name_matrix = np.load(data_path / "name_matrix.npy")
-        dist_matrix = np.load(data_path / "dist_matrix.npy")
+        name_matrix = np.load(data_path / "siamese_name_matrix.npy")
+        dist_matrix = np.load(data_path / "siamese_dist_matrix.npy")
 
     # new_whale_thresh = 20
     # for i in range(len(test_file_names)):
