@@ -125,6 +125,37 @@ def load_embedding_net(model_path, input_shape, dense_shapes, dense_acts, lr):
     return embedded_net
 
 
+def load_top_net(model_path, dense_shapes, dense_acts):
+    # input shape (w, h, d)
+
+    orig_weights = np.load(model_path + ".npy")
+
+    # encode each of the two inputs into a vector with the convnet
+    encoded_l = Input(shape=(4096,))
+    encoded_r = Input(shape=(4096,))
+
+    # merge two encoded inputs with the l1 distance between them
+    # Getting the L1 Distance between the 2 encodings
+    dist_func = Lambda(lambda tensor: K.abs(tensor[0] - tensor[1]))
+
+    # Add the distance function to the network
+    distance_layer = dist_func([encoded_l, encoded_r])
+    dense_input = distance_layer
+    for i in range(1, len(dense_shapes)):
+        layer = Dense(dense_shapes[i], activation=dense_acts[i])(dense_input)
+        drop_out = Dropout(0.5)(layer)
+        dense_input = drop_out
+
+    prediction = Dense(1, activation='sigmoid')(dense_input)
+    top_net = Model(inputs=[encoded_l, encoded_r], outputs=prediction)
+
+    # optimizer = Adam(lr, decay=2.5e-4)
+    # embedded_net.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=['accuracy'])
+    top_net.set_weights(orig_weights[-4::])
+
+    return top_net
+
+
 def rgb2gray(im):
     gray = 0.2989 * im[:, :, 0] + 0.5870 * im[:, :, 1] + 0.1140 * im[:, :, 2]
 

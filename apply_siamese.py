@@ -6,10 +6,12 @@ import pandas as pd
 import cv2
 from parameters import *
 from pathlib import Path
+import time
 
 
 def main():
     # Check if data is already transformed, if not transform it
+
     if bw_flag:
         test_name = "transformed_test_" + str(input_shape[0]) + "_" + str(input_shape[1]) + "_" + "bw"
         train_name = "transformed_train_" + str(input_shape[0]) + "_" + str(input_shape[1]) + "_" + "bw"
@@ -24,6 +26,7 @@ def main():
         makedirs(test_data_dir)
         print("Transforming Test Directory... \n")
         utils.transform_dir(test_path, test_data_dir, input_shape, bw_flag)
+
     train_answers_path = data_path / "train.csv"
 
     df = pd.read_csv(train_answers_path)
@@ -32,6 +35,8 @@ def main():
     loc = np.where(labels != "new_whale")[0]
     labels = labels[loc]
     image_names = image_names[loc]
+
+    test_file_names = listdir(test_path)
 
     num_blocks = int(len(labels) / batch_size)
     remainder = len(labels) - num_blocks * batch_size
@@ -70,7 +75,6 @@ def main():
     else:
         train_embeddings = np.load(data_path / "train_embeddings.npy")
 
-    test_file_names = listdir(test_path)
     if not exists(data_path / "test_embeddings.npy"):
         print("Calculating Test Embeddings...\n")
         test_embeddings = np.zeros([len(test_file_names), 4096])
@@ -99,13 +103,24 @@ def main():
         np.save(data_path / "test_embeddings", test_embeddings)
     else:
         test_embeddings = np.load(data_path / "test_embeddings.npy")
-
+    num_train = train_embeddings.shape[0]
+    num_test = len(test_file_names)
+    # Apply top net
     if not exists(data_path / "name_matrix.npy"):
         name_matrix = []
-        dist_matrix = np.zeros([len(test_file_names), 5])
+        dist_matrix = np.zeros([num_test, 5])
+        top_model = utils.load_top_net(
+            model_path,
+            dense_shapes,
+            dense_acts
+        )
         for i in range(len(test_file_names)):
             if i % 100 == 0:
                 print("Processing Test File {}/{}".format(i, len(test_file_names)))
+            left_batch = np.zeros([num_train, 4096])
+            for j in range(num_train):
+                left_batch[j, :] = test_embeddings[i, :]
+            y_hat = top_model.predict([left_batch, train_embeddings])
             dist = np.linalg.norm(train_embeddings - test_embeddings[i, :], axis=1)
             sort_loc = np.argsort(dist)
             counter = 0
@@ -151,5 +166,27 @@ def main():
             f.write(line)
 
 
+def time_test():
+    top_model = utils.load_top_net(
+        model_path,
+        dense_shapes,
+        dense_acts
+    )
+    test_embeddings = np.load(data_path / "test_embeddings.npy")
+    train_embeddings = np.load(data_path / "train_embeddings.npy")
+    num_train = train_embeddings.shape[0]
+    num_test = test_embeddings.shape[0]
+
+    start = time.time()
+    left_batch = np.zeros([num_train, 4096])
+    for j in range(num_train):
+        left_batch[j, :] = test_embeddings[0, :]
+    y_hat = top_model.predict([left_batch, train_embeddings])
+    total = time.time() - start
+    total_time = (total * num_test)/ 60
+    print(total_time)
+
+
 if __name__ == "__main__":
-    main()
+    time_test()
+    # main()
