@@ -114,26 +114,26 @@ def main():
             dense_shapes,
             dense_acts
         )
-        for i in range(len(test_file_names)):
+        for i in range(num_test):
             if i % 100 == 0:
-                print("Processing Test File {}/{}".format(i, len(test_file_names)))
+                print("Processing Test File {}/{}".format(i, num_test))
             left_batch = np.zeros([num_train, 4096])
             for j in range(num_train):
                 left_batch[j, :] = test_embeddings[i, :]
             y_hat = top_model.predict([left_batch, train_embeddings])
-            dist = np.linalg.norm(train_embeddings - test_embeddings[i, :], axis=1)
-            sort_loc = np.argsort(dist)
+            y = y_hat.flatten()
+            sort_loc = np.argsort(y)
             counter = 0
             whale_names = []
             whale_set = set([])
-            index = 0
+            index = num_train - 1
             while counter < 5:
                 whale_set.add(labels[sort_loc[index]])
                 if len(whale_set) > counter:
                     whale_names.append(labels[sort_loc[index]])
-                    dist_matrix[i, counter] = dist[sort_loc[index]]
+                    dist_matrix[i, counter] = y[sort_loc[index]]
                     counter += 1
-                index += 1
+                index -= 1
             name_matrix.append(whale_names)
 
         name_matrix = np.array(name_matrix)
@@ -142,23 +142,23 @@ def main():
     else:
         name_matrix = np.load(data_path / "name_matrix.npy")
         dist_matrix = np.load(data_path / "dist_matrix.npy")
-    new_whale_thresh = 20
 
-    for i in range(len(test_file_names)):
-        loc = np.where(dist_matrix[i, :] > new_whale_thresh)[0]
-        if len(loc) > 0:
-            names = name_matrix[i, :]
-            temp = np.copy(names[loc[0]:-1])
-            name_matrix[i, loc[0]] = "new_whale"
-            if loc[0] < 4:
-                name_matrix[i, loc[0] + 1::] = temp
+    # new_whale_thresh = 20
+    # for i in range(len(test_file_names)):
+    #     loc = np.where(dist_matrix[i, :] > new_whale_thresh)[0]
+    #     if len(loc) > 0:
+    #         names = name_matrix[i, :]
+    #         temp = np.copy(names[loc[0]:-1])
+    #         name_matrix[i, loc[0]] = "new_whale"
+    #         if loc[0] < 4:
+    #             name_matrix[i, loc[0] + 1::] = temp
 
     if not exists("submissions"):
         makedirs("submissions")
     if bw_flag:
-        submission_name = "submissions/" + str(input_shape[0]) + "_" + str(input_shape[1]) + "_bw.csv"
+        submission_name = "submissions/siamese_" + str(input_shape[0]) + "_" + str(input_shape[1]) + "_bw.csv"
     else:
-        submission_name = "submissions/" + str(input_shape[0]) + "_" + str(input_shape[1]) + "_color.csv"
+        submission_name = "submissions/siamese_" + str(input_shape[0]) + "_" + str(input_shape[1]) + "_color.csv"
     with open(submission_name, "w") as f:
         f.write("Image,Id\n")
         for i in range(len(test_file_names)):
@@ -188,5 +188,5 @@ def time_test():
 
 
 if __name__ == "__main__":
-    time_test()
-    # main()
+    # time_test()
+    main()
